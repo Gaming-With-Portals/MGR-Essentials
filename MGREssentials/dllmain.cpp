@@ -17,55 +17,6 @@
 #define HOOK(address, name) MH_CreateHook(LPVOID(address), hk##name, (LPVOID*)&o##name); MH_EnableHook(LPVOID(address));
 
 
-
-struct FmergeNameTableHeader
-{
-	uint32_t stride;
-
-	char* getName(size_t index)
-	{
-		return reinterpret_cast<char*>(this + 1) + index * stride;
-	}
-};
-
-struct FmergeHeader
-{
-	char identifier[4];
-	uint32_t fileNum;
-	uint32_t offsetTableOffset;
-	uint32_t extensionTableOffset;
-	uint32_t fileNameTableOffset;
-	uint32_t sizeTableOffset;
-	uint32_t padding0;
-	uint32_t padding1;
-
-	uint32_t* getOffset(size_t index)
-	{
-		return reinterpret_cast<uint32_t*>(identifier + offsetTableOffset) + index;
-	}
-
-	char* getExtension(size_t index)
-	{
-		return reinterpret_cast<char*>(identifier + extensionTableOffset) + sizeof(char[4]) * index;
-	}
-
-	FmergeNameTableHeader* getFileNameTable()
-	{
-		return reinterpret_cast<FmergeNameTableHeader*>(identifier + fileNameTableOffset);
-	}
-
-	uint32_t* getSize(size_t index)
-	{
-		return reinterpret_cast<uint32_t*>(identifier + sizeTableOffset) + index;
-	}
-};
-
-
-static size_t alignUp(size_t value, size_t alignment)
-{
-	return (value + alignment - 1) & ~(alignment - 1);
-}
-
 void RecursiveRepack(const char* dirPath, DatFileNode* node, bool& did_edit) { // fire ass name holy hell
 	char filter[MAX_PATH];
 	sprintf_s(filter, "%s\\*", dirPath);
